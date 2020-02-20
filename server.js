@@ -17,6 +17,7 @@ var options = {
   }
 };
 
+/*
 const mysql = require('mysql');
 
 // First you need to create a connection to the db
@@ -34,10 +35,9 @@ con.connect((err) => {
     }
     console.log('Connection established');
 });
+*/
 
-
-
-http.listen(5001, () => {
+http.listen(5001, '0.0.0.0', () => {
     console.log('Listening on port *: 5001');
 });
 
@@ -55,7 +55,7 @@ io.on('connection', (socket) => {
     try {
         let client_id = socket.id;
         const data = { client_id: client_id};
-        con.query('INSERT INTO server SET ?', data , function(err, result, fields) {
+        /*con.query('INSERT INTO server SET ?', data , function(err, result, fields) {
             if (err) {
                 console.log(err);
             }else{
@@ -63,6 +63,7 @@ io.on('connection', (socket) => {
                 console.log('Registro de conecção inserido no banco ID = '+result.insertId);
             }
         }); // fechando a conexão
+        */
     } catch (err) {
         console.log(err);
     }
@@ -124,8 +125,8 @@ io.on('connection', (socket) => {
 
     });
 
-con.end((err) => {
- console.log('DB Disconect');
-});
+//con.end((err) => {
+ //console.log('DB Disconect');
+//});
 
 });
