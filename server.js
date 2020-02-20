@@ -68,6 +68,8 @@ io.on('connection', (socket) => {
         console.log(err);
     }
 
+
+
     //Removing the socket on disconnect
     socket.on('disconnect', function() {
         for(var name in clients) {
@@ -91,8 +93,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('joined', (data) => {
-        console.log(clients);
-        // clients[socket.id].push(data);
+         clients[socket.id].push(data['socket']);
         socket.broadcast.emit('joined', (data));
     });
 
@@ -109,21 +110,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('private-message', function(data){
-
-        options.headers['Authorization'] = data.user;
-        app.get(options, (req, res) => {
-
-            console.log("Sending: " + data.message + " to " + data.toUser);
-            if (clients[data.toUser]){
-                io.sockets.connected[clients[data.toUser].socket].emit("chat-message", data);
-            } else {
-                //enviar mensagem pois usuario esta offline
-            }
-
-        });
-
-
+        io.sockets.connected[clients[data.toUser].socket].emit("chat-message", data);
     });
+
 
 //con.end((err) => {
  //console.log('DB Disconect');
