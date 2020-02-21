@@ -2,10 +2,8 @@ let app = require('express')();
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
 var cors = require('cors')
-
-if (NODE_ENV !== 'production') {
    app.use(cors())
-}
+
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
@@ -42,7 +40,7 @@ con.connect((err) => {
 });
 */
 
-http.listen(5001, () => {
+http.listen(5001, '31.220.51.155',() => {
     console.log('Listening on port *: 5001');
 });
 
