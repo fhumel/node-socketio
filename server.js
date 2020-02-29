@@ -2,6 +2,9 @@ let app = require('express')();
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
 const dotenv = require('dotenv');
+const axios = require('axios')
+
+
 dotenv.config();
 
 var cors = require('cors')
@@ -12,16 +15,7 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-var options = {
-  hostname: 'localhost',
-  port: 8000,
-  path: '/api/user',
-  method: 'GET',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'Accept': 'application/json',
-  }
-};
+
 
 /*
 const mysql = require('mysql');
@@ -53,14 +47,13 @@ io.on('connection', (socket) => {
 
     // socket.emit('connections', Object.keys(io.sockets.connected).length);
 
-     console.log('user connected ID = '+  socket.id);
+     // console.log('user connected ID = '+  socket.id);
+     //
+     // console.log('Clientes conectados '+clients.length);
+     //
 
-     console.log('Clientes conectados '+clients.length);
-
-
-    try {
-        let client_id = socket.id;
-        const data = { client_id: client_id};
+        // let client_id = socket.id;
+        // const data = { client_id: client_id};
         /*con.query('INSERT INTO server SET ?', data , function(err, result, fields) {
             if (err) {
                 console.log(err);
@@ -70,9 +63,7 @@ io.on('connection', (socket) => {
             }
         }); // fechando a conexão
         */
-    } catch (err) {
-        console.log(err);
-    }
+
 
 
 
@@ -86,37 +77,68 @@ io.on('connection', (socket) => {
         }
     })
 
-    socket.on('chat-message', (data) => {
-        socket.broadcast.emit('chat-message', (data));
-    });
+    // socket.on('chat-message', (data) => {
+    //     socket.broadcast.emit('chat-message', (data));
+    // });
+    //
+    // socket.on('typing', (data) => {
+    //     socket.broadcast.emit('typing', (data));
+    // });
+    //
+    // socket.on('stopTyping', () => {
+    //     socket.broadcast.emit('stopTyping');
+    // });
+    //
+    // socket.on('leave', (data) => {
+    //     socket.broadcast.emit('leave', (data));
+    // });
 
-    socket.on('typing', (data) => {
-        socket.broadcast.emit('typing', (data));
-    });
-
-    socket.on('stopTyping', () => {
-        socket.broadcast.emit('stopTyping');
-    });
-
-    socket.on('joined', (data) => {
-         clients[socket.id].push(data['socket']);
-        socket.broadcast.emit('joined', (data));
-    });
-
-    socket.on('leave', (data) => {
-        socket.broadcast.emit('leave', (data));
-    });
     socket.on('add-user', function(data){
-        console.log('adicionando', data);
         clients[data] = {
             "socket": socket.id
         };
-        console.log(clients[data]);
-
+        console.log(clients);
     });
 
     socket.on('private-message', function(data){
-        io.sockets.connected[clients[data.toUser].socket].emit("chat-message", data);
+
+
+        async function getcliente() {
+            // pegar email do remetente
+            var headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'Authorization': "Bearer "  + data.token
+            };
+            var fraude = false;
+
+            await axios.get('http://localhost:8000/api/user', { headers })
+                .then((res) => {
+                    if(res.data.email === data.user) {
+                        fraude = true;
+                    }
+                })
+                .catch((error) => {
+                    console.error(error)
+                })
+
+            return fraude;
+        }
+
+        fraude = getcliente();
+
+        if(fraude) {
+            if(typeof clients[data.toUser] != 'undefined' && typeof clients[data.toUser].socket != 'undefined') {
+                io.sockets.connected[clients[data.toUser].socket].emit("chat-message", data);
+                console.log('enviando mensagem e gravando no banco')
+            } else {
+                // so grava no banco o cliente esta offline ou ainda nucna entrou no chat
+                console.log('gravando no banco')
+            }
+        } else {
+            console.log('tentativa de fraude')
+        }
+
     });
 
 
